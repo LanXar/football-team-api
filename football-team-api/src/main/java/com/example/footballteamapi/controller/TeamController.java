@@ -6,7 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
+// import org.springframework.http.HttpStatus;
+// import org.springframework.http.MediaType;
+// import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/api/teams")
@@ -27,4 +31,16 @@ public class TeamController {
     public Team createTeam(@RequestBody Team team) {
         return teamService.saveTeam(team);
     }
+    
+    // @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    // public ResponseEntity<Page<Team>> getAllTeams(Pageable pageable) {
+    //     Page<Team> teams = teamService.getAllTeams(pageable);
+    //     return new ResponseEntity<>(teams, HttpStatus.OK);
+    // }
+
+    // @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    // public ResponseEntity<Team> createTeam(@RequestBody Team team) {
+    //     Team createdTeam = teamService.createTeam(team);
+    //     return new ResponseEntity<>(createdTeam, HttpStatus.OK);
+    // }
 }
