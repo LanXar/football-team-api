@@ -3,6 +3,7 @@ package com.example.footballteamapi.model;
 import jakarta.persistence.*;
 import java.util.List;
 
+// Represents a football team entity.
 @Entity
 public class Team {
 
@@ -12,8 +13,22 @@ public class Team {
     private String name;
     private String acronym;
     private Double budget;
+
+    // Association to players, with cascade operations to handle player lifecycle
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Player> players;
+
+    // Default constructor required by JPA.
+    public Team() {
+    }
+
+    // Constructs a new team with the specified details.
+    public Team(Long id, String name, String acronym, Double budget) {
+        this.id = id;
+        this.name = name;
+        this.acronym = acronym;
+        this.budget = budget;
+    }
 
     // Getters and Setters
     public Long getId() {

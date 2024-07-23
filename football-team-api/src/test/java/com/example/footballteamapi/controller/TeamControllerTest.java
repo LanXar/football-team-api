@@ -23,11 +23,10 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 public class TeamControllerTest {
@@ -153,5 +152,28 @@ public class TeamControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(2))
                 .andExpect(jsonPath("$.content[0].name").value("John Doe"));
+    }
+
+    @Test
+    public void testUpdateTeam() throws Exception {
+        Team updatedTeam = new Team(1L, "Nice Updated", "NFC", 1200000.0);
+
+        when(teamService.updateTeam(eq(1L), any(Team.class))).thenReturn(updatedTeam);
+
+        String teamJson = "{\"name\": \"Nice Updated\", \"acronym\": \"NFC\", \"budget\": 1200000.0 }";
+
+        mockMvc.perform(put("/api/teams/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(teamJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Nice Updated"));
+    }
+
+    @Test
+    public void testDeleteTeam() throws Exception {
+        doNothing().when(teamService).deleteTeam(1L);
+
+        mockMvc.perform(delete("/api/teams/1"))
+                .andExpect(status().isNoContent());
     }
 }

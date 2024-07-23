@@ -15,6 +15,7 @@ Football Team API is a Spring Boot application that provides a RESTful API for m
 - Java 22
 - Spring Boot 3.3.2
 - Spring Data JPA
+- Hibernate
 - MySQL
 - Maven
 - Mockito
@@ -42,6 +43,7 @@ Football Team API is a Spring Boot application that provides a RESTful API for m
    spring.datasource.username=yourusername
    spring.datasource.password=yourpassword
    spring.jpa.hibernate.ddl-auto=update
+   spring.jpa.show-sql=true
    ```
 
 3. Build the project:
@@ -54,71 +56,147 @@ Football Team API is a Spring Boot application that provides a RESTful API for m
    mvn spring-boot:run
    ```
 
-## API Endpoints
+### Database Setup
 
-### Teams
+Ensure your MySQL server is running and create a database for the application:
 
-- **GET /api/teams**: Get all teams (with pagination and sorting)
-- **POST /api/teams**: Create a new team
-- **GET /api/teams/{teamId}/players**: Get players by team ID (with pagination)
-- **POST /api/teams/{teamId}/players**: Add a player to a team
+```sql
+CREATE DATABASE football_team_db;
+```
 
-### Players
+Update `application.properties` with your MySQL credentials and the newly created database name.
 
-- **GET /api/players**: Get all players (with pagination and sorting)
-- **POST /api/players**: Create a new player
-- **GET /api/players/{playerId}**: Get a player by ID
-- **PUT /api/players/{playerId}**: Update a player by ID
-- **DELETE /api/players/{playerId}**: Delete a player by ID
+## Using the API with Postman
 
-## Running Tests
+To interact with the API using Postman:
+
+1. **Install Postman**
+
+2. **Create a New Collection**: In Postman, create a new collection named "Football Team API".
+
+3. **Add Requests to Collection**:
+   - **Get All Teams**: 
+     - Method: GET
+     - URL: `http://localhost:8080/api/teams`
+   - **Create a New Team**:
+     - Method: POST
+     - URL: `http://localhost:8080/api/teams`
+     - Body: 
+       ```json
+       {
+         "name": "Nice",
+         "acronym": "NFC",
+         "budget": 1000000.0
+       }
+       ```
+   - **Get a Team by ID**:
+     - Method: GET
+     - URL: `http://localhost:8080/api/teams/{teamId}`
+   - **Update a Team by ID**:
+     - Method: PUT
+     - URL: `http://localhost:8080/api/teams/{teamId}`
+     - Body:
+       ```json
+       {
+         "name": "Nice Updated",
+         "acronym": "NFCU",
+         "budget": 1200000.0
+       }
+       ```
+   - **Add Player to Team**:
+     - Method: POST
+     - URL: `http://localhost:8080/api/teams/{teamId}/players`
+     - Body:
+       ```json
+       {
+         "name": "Player1",
+         "position": "Forward"
+       }
+       ```
+   - **Delete a Team by ID**:
+     - Method: DELETE
+     - URL: `http://localhost:8080/api/teams/{teamId}`
+   - **Get All Players**: 
+     - Method: GET
+     - URL: `http://localhost:8080/api/players`
+   - **Get Players by Team ID**:
+     - Method: GET
+     - URL: `http://localhost:8080/api/teams/{teamId}/players`
+   - **Create a New Player**:
+     - Method: POST
+     - URL: `http://localhost:8080/api/players`
+     - Body:
+       ```json
+       {
+         "name": "Player1",
+         "position": "Forward",
+         "team": {
+           "id": 1
+         }
+       }
+       ```
+   - **Get a Player by ID**:
+     - Method: GET
+     - URL: `http://localhost:8080/api/players/{playerId}`
+   - **Update a Player by ID**:
+     - Method: PUT
+     - URL: `http://localhost:8080/api/players/{playerId}`
+     - Body:
+       ```json
+       {
+         "name": "Player1",
+         "position": "Midfielder"
+       }
+       ```
+   - **Delete a Player by ID**:
+     - Method: DELETE
+     - URL: `http://localhost:8080/api/players/{playerId}`
+
+---
+
+### Running Tests
 
 To run the unit tests:
 ```bash
 mvn test
 ```
 
-# Technical Choices for Football Team API
-```
-## Overview
+## Technical Choices for Football Team API
 
-This document outlines the technical choices made during the development of the Football Team API.
+### Backend Framework
 
-## Backend Framework
-
-### Spring Boot
+#### Spring Boot
 
 - **Reason**: Spring Boot is a widely used framework for building microservices and web applications. It provides a range of features and integrations that simplify the development process, including dependency management, embedded servers, and auto-configuration.
 
-## Database
+### Database
 
-### MySQL
+#### MySQL
 
-- **Reason**: MySQL is a popular and reliable relational database management system. It is well-suited for structured data and provides robust support for transactions, indexing, and scalability.
+- **Reason**: MySQL is a reliable relational database management system. It is well-suited for structured data and provides robust support for transactions, indexing, and scalability.
 
-## ORM Framework
+### ORM Framework
 
-### Spring Data JPA
+#### Spring Data JPA
 
 - **Reason**: Spring Data JPA simplifies the implementation of data access layers by providing a repository abstraction. It integrates seamlessly with Spring Boot and supports JPA-based data access, making it easier to manage database entities and perform CRUD operations.
 
-## Testing Frameworks
+### Testing Frameworks
 
-### JUnit
+#### JUnit
 
 - **Reason**: JUnit is a widely-used testing framework for Java. It provides a simple and efficient way to write and run repeatable tests. It is well-supported and integrates with most Java development tools.
 
-### Mockito
+#### Mockito
 
 - **Reason**: Mockito is a popular mocking framework for unit tests in Java. It allows developers to create mock objects and define their behavior, making it easier to test components in isolation.
 
-## Build Tool
+### Build Tool
 
-### Maven
+#### Maven
 
 - **Reason**: Maven is a powerful build automation tool used primarily for Java projects. It provides a standardized way to manage project dependencies, build lifecycle, and project structure. Maven's dependency management ensures that the project can be easily built and run on any system.
 
 ## Conclusion
 
 The above choices were made to ensure the application is maintainable, and scalable. The technologies and frameworks selected are widely used and well-supported within the Java ecosystem, providing a solid foundation for the Football Team API.
-```

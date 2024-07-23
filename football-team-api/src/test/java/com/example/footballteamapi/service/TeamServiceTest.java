@@ -136,5 +136,44 @@ public class TeamServiceTest {
         assertEquals(2, result.getTotalElements());
         assertEquals("John Doe", result.getContent().get(0).getName());
     }
+
+    @Test
+    public void testUpdateTeam() {
+        Team team = new Team();
+        team.setId(1L);
+        team.setName("Nice");
+        team.setAcronym("NFC");
+        team.setBudget(1000000.0);
+
+        Team updatedTeam = new Team();
+        updatedTeam.setId(1L);
+        updatedTeam.setName("Nice Updated");
+        updatedTeam.setAcronym("NFC");
+        updatedTeam.setBudget(1200000.0);
+
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(team));
+        when(teamRepository.save(team)).thenReturn(updatedTeam);
+
+        Team result = teamService.updateTeam(1L, updatedTeam);
+        assertNotNull(result);
+        assertEquals("Nice Updated", result.getName());
+        assertEquals(1200000.0, result.getBudget());
+    }
+
+    @Test
+    public void testDeleteTeam() {
+        Team team = new Team();
+        team.setId(1L);
+        team.setName("Nice");
+        team.setAcronym("NFC");
+        team.setBudget(1000000.0);
+
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(team));
+        doNothing().when(teamRepository).delete(team);
+
+        teamService.deleteTeam(1L);
+
+        verify(teamRepository, times(1)).delete(team);
+    }
 }
 
