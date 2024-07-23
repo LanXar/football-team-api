@@ -32,7 +32,7 @@ Football Team API is a Spring Boot application that provides a RESTful API for m
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/football-team-api.git
+   git clone https://github.com/LanXar/football-team-api.git
    cd football-team-api
    ```
 
@@ -73,7 +73,7 @@ Football Team API is a Spring Boot application that provides a RESTful API for m
 
 ## Running Tests
 
-To run the unit tests, use the following command:
+To run the unit tests:
 ```bash
 mvn test
 ```
