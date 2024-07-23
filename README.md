@@ -121,8 +121,4 @@ This document outlines the technical choices made during the development of the 
 ## Conclusion
 
 The above choices were made to ensure the application is maintainable, and scalable. The technologies and frameworks selected are widely used and well-supported within the Java ecosystem, providing a solid foundation for the Football Team API.
-
-## License
-
-This project is licensed under the MIT License.
 ```

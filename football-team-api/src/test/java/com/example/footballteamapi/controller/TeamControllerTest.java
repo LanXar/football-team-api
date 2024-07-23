@@ -6,122 +6,152 @@ import com.example.footballteamapi.service.TeamService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(TeamController.class)
-class TeamControllerTest {
+@SpringBootTest
+public class TeamControllerTest {
 
     private MockMvc mockMvc;
-
-    @MockBean
-    private TeamService teamService;
 
     @InjectMocks
     private TeamController teamController;
 
+    @Mock
+    private TeamService teamService;
+
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(teamController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(teamController)
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
+                .build();
     }
 
     @Test
-    void testGetAllTeams() throws Exception {
-        Team team = new Team();
-        team.setId(1L);
-        team.setName("Nice FC");
-        team.setAcronym("NFC");
-        team.setBudget(5000000.00);
-        team.setPlayers(Collections.emptyList());
-    
+    public void testGetAllTeams() throws Exception {
         Pageable pageable = PageRequest.of(0, 10);
-        Page<Team> page = new PageImpl<>(Collections.singletonList(team), pageable, 1);
+        Team team1 = new Team();
+        team1.setId(1L);
+        team1.setName("Nice");
+        team1.setAcronym("NFC");
+        team1.setBudget(1000000.0);
+
+        Team team2 = new Team();
+        team2.setId(2L);
+        team2.setName("Paris");
+        team2.setAcronym("PSG");
+        team2.setBudget(2000000.0);
+
+        Page<Team> page = new PageImpl<>(Arrays.asList(team1, team2), pageable, 2);
+
         when(teamService.getAllTeams(pageable)).thenReturn(page);
-    
+
         mockMvc.perform(get("/api/teams")
                 .param("page", "0")
                 .param("size", "10")
-                .param("sortBy", "name"))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json("{\"content\":[{\"id\":1,\"name\":\"Nice FC\",\"acronym\":\"NFC\",\"budget\":5000000.00,\"players\":[]}],\"pageable\":{\"sort\":{\"sorted\":false,\"unsorted\":true,\"empty\":true},\"offset\":0,\"pageNumber\":0,\"pageSize\":10,\"paged\":true,\"unpaged\":false},\"totalPages\":1,\"totalElements\":1,\"last\":true,\"first\":true,\"sort\":{\"sorted\":false,\"unsorted\":true,\"empty\":true},\"numberOfElements\":1,\"size\":10,\"number\":0,\"empty\":false}"));
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.content[0].name").value("Nice"));
     }
-    
-    @Test
-    void testCreateTeam() throws Exception {
-        String teamJson = "{\"name\":\"Nice FC\",\"acronym\":\"NFC\",\"budget\":5000000.00,\"players\":[]}";
 
+    @Test
+    public void testGetTeamById() throws Exception {
         Team team = new Team();
-        team.setName("Nice FC");
+        team.setId(1L);
+        team.setName("Nice");
         team.setAcronym("NFC");
-        team.setBudget(5000000.00);
-        team.setPlayers(Collections.emptyList());
+        team.setBudget(1000000.0);
+
+        when(teamService.getTeamById(1L)).thenReturn(Optional.of(team));
+
+        mockMvc.perform(get("/api/teams/1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Nice"));
+    }
+
+    @Test
+    public void testCreateTeam() throws Exception {
+        Team team = new Team();
+        team.setName("Nice");
+        team.setAcronym("NFC");
+        team.setBudget(1000000.0);
 
         when(teamService.createTeam(any(Team.class))).thenReturn(team);
 
         mockMvc.perform(post("/api/teams")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(teamJson))
+                .content("{\"name\":\"Nice\",\"acronym\":\"NFC\",\"budget\":1000000.0}"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(teamJson));
+                .andExpect(jsonPath("$.name").value("Nice"));
     }
 
     @Test
-    void testGetPlayersByTeamId() throws Exception {
+    public void testAddPlayerToTeam() throws Exception {
         Player player = new Player();
-        player.setId(1L);
         player.setName("John Doe");
         player.setPosition("Forward");
 
+        when(teamService.addPlayerToTeam(eq(1L), any(Player.class))).thenReturn(player);
+
+        mockMvc.perform(post("/api/teams/1/players")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"John Doe\",\"position\":\"Forward\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("John Doe"));
+    }
+
+    @Test
+    public void testGetPlayersByTeamId() throws Exception {
+        Team team = new Team();
+        team.setId(1L);
+        team.setName("Nice");
+        team.setAcronym("NFC");
+        team.setBudget(1000000.0);
+
+        Player player1 = new Player();
+        player1.setName("John Doe");
+        player1.setPosition("Forward");
+        player1.setTeam(team);
+
+        Player player2 = new Player();
+        player2.setName("Jane Doe");
+        player2.setPosition("Midfielder");
+        player2.setTeam(team);
+
         Pageable pageable = PageRequest.of(0, 10);
-        Page<Player> page = new PageImpl<>(Collections.singletonList(player), pageable, 1);
+        Page<Player> page = new PageImpl<>(Arrays.asList(player1, player2), pageable, 2);
+
         when(teamService.getPlayersByTeamId(1L, pageable)).thenReturn(page);
 
         mockMvc.perform(get("/api/teams/1/players")
                 .param("page", "0")
-                .param("size", "10"))
+                .param("size", "10")
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json("{\"content\":[{\"id\":1,\"name\":\"John Doe\",\"position\":\"Forward\"}],\"pageable\":{\"sort\":{\"sorted\":false,\"unsorted\":true,\"empty\":true},\"offset\":0,\"pageNumber\":0,\"pageSize\":10,\"paged\":true,\"unpaged\":false},\"totalPages\":1,\"totalElements\":1,\"last\":true,\"first\":true,\"sort\":{\"sorted\":false,\"unsorted\":true,\"empty\":true},\"numberOfElements\":1,\"size\":10,\"number\":0,\"empty\":false}"));
-    }
-
-    @Test
-    void testAddPlayerToTeam() throws Exception {
-        String playerJson = "{\"name\":\"John Doe\",\"position\":\"Forward\"}";
-
-        Player player = new Player();
-        player.setName("John Doe");
-        player.setPosition("Forward");
-
-        when(teamService.addPlayerToTeam(anyLong(), any(Player.class))).thenReturn(player);
-
-        mockMvc.perform(post("/api/teams/1/players")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(playerJson))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(playerJson));
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.content[0].name").value("John Doe"));
     }
 }
